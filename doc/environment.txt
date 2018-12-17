@@ -1,0 +1,9 @@
+
+
+#Environment Install
+
+1. Copy php_ffmpeg.dll to xampp\php\ext.
+2. Copy ffmpeg.exe into root of your site or anywhere else as long you know where (you will have to define path to it in your php file)...
+3. Copy everything(avcodec.dll, avformat.dll) else to windows/system32.
+4. Add "extension=php_ffmpeg.dll" or remove ";" on the beginning of that line in php.ini file (xampp\php\php.ini )
+5. Restart apache server... and voila :)
