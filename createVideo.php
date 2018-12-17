@@ -2,7 +2,7 @@
 
 # Input data
 $audio_file = "src/audio.mp3";
-$slide_duration = 3;
+$slide_duration = 5;
 $result_file = "newvideo.mp4";
 $data = [
   [
@@ -54,9 +54,11 @@ function createVideo($data, $slide_duration, $audio_file, $result_file) {
   add_audio_video($total_time, $audio_file, $video_coder, $scale);
   add_subtitle_video($subtitle, $result_file);
   delete_temp_files();
+  rmdir("temp");
 }
 
 function init_data($data, $slide_duration, $merge_file_path, $subtitle){
+  mkdir("temp");
   delete_temp_files();
   create_subtitle($data, $slide_duration, $subtitle);
 }
