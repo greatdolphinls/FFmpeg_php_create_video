@@ -112,6 +112,7 @@ function add_merge_file($key, $merge_file){
   fwrite($file, $txt);
   fclose($file);
 }
+
 function convert_image_video($input_image, $slide_duration, $key, $video_coder, $temp_path, $scale) {
   $ffmpeg = "ffmpeg -loop 1 -i $input_image $video_coder -t $slide_duration -r 30 -pix_fmt yuv420p -y -vf $scale $temp_path$key.mp4";
   shell_exec($ffmpeg);
