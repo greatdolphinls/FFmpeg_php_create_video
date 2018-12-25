@@ -39,22 +39,28 @@ function createVideo($data, $slide_duration, $audio_file, $result_file_name) {
   $merge_file     = "temp/input.txt";
   $subtitle       = $result_file_name.".srt";
   $result_file    = $result_file_name.".mp4";
-  $image_count    = sizeof($data);
+  $image_count    = 0;  // sizeof($data);
   $total_time     = "-t ".$slide_duration * $image_count;
 
   init_data($data, $slide_duration, $merge_file, $subtitle);
 
   foreach($data as $key => $row) {
-
-    convert_image_video($row['image'], $slide_duration, $key, $video_coder, $temp_path, $scale);
-    $result_image_path = $temp_path.$key.".mp4";
-    add_slide_video($result_image_path, $slide_duration, $key);
-    add_merge_file($key, $merge_file);
-
+    if(file_exists($row['image'])){
+      convert_image_video($row['image'], $slide_duration, $key, $video_coder, $temp_path, $scale);
+      $result_image_path = $temp_path.$key.".mp4";
+      add_slide_video($result_image_path, $slide_duration, $key);
+      add_merge_file($key, $merge_file);
+      $image_count ++;
+    }
+  }
+  $total_time     = "-t ".$slide_duration * $image_count;
+  merge_videos($merge_file);
+  if (file_exists($audio_file)){
+    add_audio_video($total_time, $audio_file, $video_coder, $scale);
+  }else{
+    add_noaudio_video($total_time, $audio_file, $video_coder, $scale);
   }
 
-  merge_videos($merge_file);
-  add_audio_video($total_time, $audio_file, $video_coder, $scale);
   add_subtitle_video($subtitle, $result_file);
   delete_temp_files();
   rmdir("temp");
@@ -80,17 +86,18 @@ function delete_temp_files(){
 function create_subtitle($data, $slide_duration, $subtitle){
 
   $file = fopen($subtitle, "w");
-
+  $count = 0;
   foreach($data as $key => $row) {
-    $txt = ($key + 1)."\n";
-    $txt .= create_duration($key, $slide_duration);
-    $txt .= "\n";
-    $txt .= $row["subtitle"];
-    $txt .= "\n\n";
-
-    fwrite($file, $txt);
+    if(file_exists($row['image'])){
+      $txt = ($count +1)."\n";
+      $txt .= create_duration($count, $slide_duration);
+      $txt .= "\n";
+      $txt .= $row["subtitle"];
+      $txt .= "\n\n";
+      fwrite($file, $txt);
+      $count ++;
+    }
   }
-
   fclose($file);
 }
 
@@ -152,7 +159,10 @@ function add_audio_video($total_time, $audio_file, $video_coder, $scale) {
   $ffmpeg = "ffmpeg -y -i temp/temp.mp4 $total_time -i $audio_file $video_coder -r 30 -c:a aac -vf $scale temp/temp1.mp4";
   shell_exec($ffmpeg);
 }
-
+function add_noaudio_video($total_time, $audio_file, $video_coder, $scale) {
+  $ffmpeg = "ffmpeg -y -i temp/temp.mp4 $total_time $video_coder -r 30 -vf $scale temp/temp1.mp4";
+  shell_exec($ffmpeg);
+}
 function add_subtitle_video($subtitle, $result_file) {
 
   $slide_ffmpeg ="ffmpeg -y -i temp/temp1.mp4 -f srt -i $subtitle -c:v copy -c:a copy -c:s mov_text $result_file";
